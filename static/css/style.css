@@ -1,0 +1,308 @@
+/* D:\PROJECT\ML b&w colorizer Project\static\css\style.css */
+:root {
+    /* Light Theme (Default) */
+    --primary-color: #6200EE;
+    --primary-variant-color: #3700B3;
+    --secondary-color: #03DAC6;
+    --background-color: #f5f5f5;
+    --surface-color: #FFFFFF;
+    --on-primary-color: #FFFFFF;
+    --on-surface-color: #000000;
+    --on-surface-variant-color: rgba(0, 0, 0, 0.87); /* For main text */
+    --text-secondary-color: #757575;
+    --error-color: #B00020;
+    --success-color: #2e7d32;
+    --border-color: #e0e0e0;
+    --font-family: 'Roboto', sans-serif;
+    --progress-bar-bg: #e0e0e0;
+    --upload-area-bg: #fafafa;
+    --status-area-bg: #f9f9f9;
+}
+
+/* **MODIFIED: Dark Theme Variables** */
+body.dark-mode {
+    --primary-color: #BB86FC; /* Lighter Purple */
+    --primary-variant-color: #9050fa; /* Adjusted for dark mode */
+    --secondary-color: #03DAC5; /* Teal, often kept similar */
+    --background-color: #121212; /* Very Dark Gray */
+    --surface-color: #1e1e1e; /* Dark Gray for cards/surfaces */
+    --on-primary-color: #000000; /* Text on primary buttons */
+    --on-surface-color: #e0e0e0; /* Light text for dark surfaces */
+    --on-surface-variant-color: rgba(255, 255, 255, 0.87);
+    --text-secondary-color: #a0a0a0; /* Lighter gray for secondary text */
+    --error-color: #CF6679; /* Lighter Red */
+    --success-color: #66bb6a; /* Lighter Green */
+    --border-color: #373737; /* Darker borders */
+    --progress-bar-bg: #333333;
+    --upload-area-bg: #2c2c2c;
+    --status-area-bg: #272727;
+}
+
+body {
+    font-family: var(--font-family);
+    background-color: var(--background-color);
+    margin: 0;
+    padding: 20px;
+    color: var(--on-surface-variant-color); /* Use variant for main text */
+    line-height: 1.6;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 100vh;
+    /* **MODIFIED: Added transition for theme changes** */
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.container {
+    background-color: var(--surface-color);
+    padding: 20px 30px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 700px;
+    /* **MODIFIED: Added transition** */
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+body.dark-mode .container {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3); /* Darker shadow for dark mode */
+}
+
+
+header {
+    text-align: center;
+    margin-bottom: 30px;
+    color: var(--primary-color);
+    transition: color 0.3s ease; /* **MODIFIED** */
+}
+
+header h1 {
+    font-weight: 500;
+    font-size: 2em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+header h1 .material-icons {
+    font-size: 1.2em;
+    margin-right: 10px;
+    /* **MODIFIED: Transition for icon color** */
+    transition: color 0.3s ease;
+}
+
+
+.upload-area {
+    border: 2px dashed var(--border-color);
+    border-radius: 8px;
+    padding: 30px;
+    text-align: center;
+    cursor: pointer;
+    background-color: var(--upload-area-bg);
+    /* **MODIFIED: Combined transitions */
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+    margin-bottom: 20px;
+}
+
+.upload-area.dragover {
+    background-color: var(--primary-variant-color); /* Changed to variant for better visibility */
+    border-color: var(--primary-color);
+    opacity: 0.7;
+}
+body.dark-mode .upload-area.dragover {
+    background-color: var(--primary-variant-color);
+    opacity: 0.6;
+}
+
+
+.upload-icon .material-icons {
+    font-size: 48px;
+    color: var(--primary-color);
+    margin-bottom: 10px;
+    transition: color 0.3s ease; /* **MODIFIED** */
+}
+
+.upload-area p {
+    margin: 5px 0;
+    font-size: 0.95em;
+    color: var(--text-secondary-color);
+    transition: color 0.3s ease; /* **MODIFIED** */
+}
+
+.file-name {
+    font-weight: 500;
+    color: var(--primary-color) !important;
+    margin-top: 10px !important;
+    transition: color 0.3s ease !important; /* **MODIFIED** */
+}
+
+.button-link {
+    background: none;
+    border: none;
+    color: var(--primary-color);
+    text-decoration: underline;
+    cursor: pointer;
+    padding: 0;
+    font-size: inherit;
+    font-family: inherit;
+    transition: color 0.3s ease; /* **MODIFIED** */
+}
+
+.controls {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9em;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    /* **MODIFIED: Combined transitions */
+    transition: background-color 0.2s ease, box-shadow 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+.button .material-icons {
+    font-size: 1.2em;
+}
+
+.button.primary {
+    background-color: var(--primary-color);
+    color: var(--on-primary-color);
+}
+.button.primary:hover:not(:disabled) {
+    background-color: var(--primary-variant-color);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+}
+body.dark-mode .button.primary:hover:not(:disabled) {
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+
+.button.secondary {
+    background-color: var(--surface-color);
+    color: var(--primary-color);
+    border: 1px solid var(--border-color);
+}
+.button.secondary:hover:not(:disabled) {
+    background-color: rgba(0,0,0,0.05); /* Slight darkening for light mode */
+}
+body.dark-mode .button.secondary:hover:not(:disabled) {
+    background-color: rgba(255,255,255,0.08); /* Slight lightening for dark mode */
+}
+
+
+.button:disabled {
+    background-color: var(--border-color); /* Use border color for disabled bg */
+    color: var(--text-secondary-color);
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+.status-area {
+    background-color: var(--status-area-bg);
+    padding: 15px;
+    border-radius: 4px;
+    margin-bottom: 25px;
+    border: 1px solid var(--border-color);
+    min-height: 50px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    /* **MODIFIED: Transition */
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+#statusText {
+    margin: 0;
+    text-align: center;
+    color: var(--text-secondary-color);
+    transition: color 0.3s ease; /* **MODIFIED** */
+}
+#statusText.processing { color: var(--primary-color); font-weight: 500; }
+#statusText.error { color: var(--error-color); font-weight: 500; }
+#statusText.success { color: var(--success-color); font-weight: 500; }
+
+
+.progress-bar-container {
+    width: 100%;
+    background-color: var(--progress-bar-bg);
+    border-radius: 4px;
+    margin-top: 10px;
+    height: 10px;
+    overflow: hidden;
+    transition: background-color 0.3s ease; /* **MODIFIED** */
+}
+
+.progress-bar {
+    width: 0%;
+    height: 100%;
+    background-color: var(--primary-color);
+    border-radius: 4px;
+    transition: width 0.1s linear, background-color 0.3s ease; /* **MODIFIED** */
+}
+
+
+.output-area {
+    margin-top: 20px;
+    text-align: center;
+}
+
+.output-area img, .output-area video {
+    max-width: 100%;
+    height: auto;
+    border-radius: 4px;
+    border: 1px solid var(--border-color);
+    background-color: #000; /* Fallback for videos */
+    transition: border-color 0.3s ease; /* **MODIFIED** */
+}
+
+footer {
+    text-align: center;
+    margin-top: 30px;
+    font-size: 0.8em;
+    color: var(--text-secondary-color);
+    transition: color 0.3s ease; /* **MODIFIED** */
+}
+
+/* **MODIFIED: Theme Switcher Button Styles** */
+.theme-switcher {
+    position: fixed; /* Changed to fixed for better placement */
+    top: 20px;
+    right: 20px;
+    z-index: 1000; /* Ensure it's above other content */
+}
+
+.icon-button {
+    background-color: var(--surface-color);
+    border: 1px solid var(--border-color);
+    color: var(--on-surface-variant-color);
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.2s ease;
+}
+.icon-button:hover {
+    background-color: var(--primary-color);
+    color: var(--on-primary-color);
+    border-color: var(--primary-color);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+.icon-button .material-icons {
+    font-size: 24px;
+    transition: transform 0.3s ease; /* For icon animation */
+}
+body.dark-mode .theme-switcher .icon-button .material-icons {
+    transform: rotate(180deg); /* Example animation */
+}

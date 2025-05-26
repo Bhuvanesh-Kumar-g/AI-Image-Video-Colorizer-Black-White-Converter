@@ -1,0 +1,57 @@
+<!-- D:\PROJECT\ML b&w colorizer Project\templates\index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image/Video Colorizer & B&W Converter</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+</head>
+<body>
+    <!-- **MODIFIED: Theme switcher button added** -->
+    <div class="theme-switcher">
+        <button id="themeToggleBtn" class="button icon-button" title="Toggle theme">
+            <span class="material-icons" id="themeIcon">brightness_7</span>
+        </button>
+    </div>
+
+    <div class="container">
+        <header>
+            <h1><span class="material-icons">palette</span> Colorizer & B&W Converter</h1>
+        </header>
+
+        <main>
+            <div class="upload-area" id="uploadArea">
+                <input type="file" id="fileInput" accept="image/*,video/*" style="display: none;">
+                <div class="upload-icon">
+                    <span class="material-icons">cloud_upload</span>
+                </div>
+                <p>Drag & drop your image or video here, or <button type="button" id="browseButton" class="button-link">browse</button></p>
+                <p class="file-name" id="fileName"></p>
+            </div>
+
+            <div class="controls">
+                <button id="colorizeBtn" class="button primary" disabled><span class="material-icons">brush</span> Colorize</button>
+                <button id="bwBtn" class="button secondary" disabled><span class="material-icons">filter_b_and_w</span> Convert to B&W</button>
+            </div>
+
+            <div class="status-area" id="statusArea">
+                <p id="statusText">Select a file to begin.</p>
+                <div class="progress-bar-container" id="progressBarContainer" style="display: none;">
+                    <div class="progress-bar" id="progressBar"></div>
+                </div>
+            </div>
+
+            <div class="output-area" id="outputArea">
+                <!-- Processed media will be shown here -->
+            </div>
+        </main>
+
+        
+    </div>
+
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>

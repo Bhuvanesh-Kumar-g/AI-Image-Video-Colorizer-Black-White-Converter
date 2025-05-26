@@ -1,0 +1,41 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
+*.egg
+venv/
+.venv/
+env/
+ENV/
+*.env
+.env.*
+
+# IDE / Editor specific
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
+
+# Uploads and Processed Files (if you don't want to commit them)
+# These are often generated and can be large.
+# If you want users to see example outputs, commit a few small ones manually.
+uploads/*
+!uploads/.gitkeep # Add .gitkeep to keep the directory if it's empty
+processed_files/*
+!processed_files/.gitkeep # Add .gitkeep to keep the directory if it's empty
+
+# Large model files (if they exceed GitHub's limits or you obtained them elsewhere)
+# Consider using Git LFS for large files if you must commit them.
+# models/*.caffemodel 
+# models/*.pth
+# (Uncomment and adjust if your models are very large and you're not committing them directly)
+
+# Operating System files
+.DS_Store
+Thumbs.db
