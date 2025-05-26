@@ -15,25 +15,7 @@ This project provides a web application to automatically colorize black and whit
 *   **OpenCV DNN Model:** Utilizes a pre-trained Caffe model for colorization.
 
 ## Project Structure
-.
-├── app.py # Flask backend application
-├── models/ # Pre-trained Caffe model files (needs to be populated)
-│ ├── colorization_deploy_v2.prototxt (Required)
-│ ├── colorization_release_v2.caffemodel (Required)
-│ └── pts_in_hull.npy (Required)
-├── static/ # Frontend static assets
-│ ├── css/
-│ │ └── style.css
-│ └── js/
-│ └── script.js
-├── templates/ # HTML templates
-│ └── index.html
-├── uploads/ # Temporary directory for uploaded files (auto-created)
-├── processed_files/ # Directory for processed output files (auto-created)
-├── .gitignore # Specifies intentionally untracked files
-├── README.md # This file
-├── requirements.txt # Python dependencies
-└── app_screenshot.png # Example screenshot of the app (optional, for README)
+
 
 ## Prerequisites
 
