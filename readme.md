@@ -15,7 +15,7 @@ This project provides a web application to automatically colorize black and whit
 *   **OpenCV DNN Model:** Utilizes a pre-trained Caffe model for colorization.
 
 ## Project Structure
-
+![Screenshot of the Colorizer Web App](./Screenshot 2025-05-26 115329.png)
 
 ## Prerequisites
 
