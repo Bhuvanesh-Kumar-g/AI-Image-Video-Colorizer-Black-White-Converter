@@ -1,4 +1,3 @@
-// D:\PROJECT\ML b&w colorizer Project\static\js\script.js
 document.addEventListener('DOMContentLoaded', () => {
     const uploadArea = document.getElementById('uploadArea');
     const fileInput = document.getElementById('fileInput');
@@ -6,39 +5,30 @@ document.addEventListener('DOMContentLoaded', () => {
     const fileNameDisplay = document.getElementById('fileName');
     const colorizeBtn = document.getElementById('colorizeBtn');
     const bwBtn = document.getElementById('bwBtn');
-    const statusText = document.getElementById('statusText');
     const outputArea = document.getElementById('outputArea');
+    
+    // Log & Progress Elements
+    const logContainer = document.getElementById('logContainer');
+    const logText = document.getElementById('logText');
     const progressBarContainer = document.getElementById('progressBarContainer');
     const progressBar = document.getElementById('progressBar');
 
-    // **MODIFIED: Theme Toggle Elements**
-    const themeToggleBtn = document.getElementById('themeToggleBtn');
-    const themeIcon = document.getElementById('themeIcon');
-    const bodyElement = document.body;
-
     let currentFile = null;
+    let pollInterval = null;
 
-    // --- File Selection ---
-    browseButton.addEventListener('click', () => fileInput.click());
+    // --- File Input Logic ---
+    browseButton.addEventListener('click', (e) => { e.stopPropagation(); fileInput.click(); });
+    uploadArea.addEventListener('click', () => fileInput.click());
+    
     fileInput.addEventListener('change', handleFileSelect);
-
-    // --- Drag and Drop ---
-    uploadArea.addEventListener('dragover', (event) => {
-        event.preventDefault();
-        uploadArea.classList.add('dragover');
-    });
+    
+    uploadArea.addEventListener('dragover', (e) => { e.preventDefault(); uploadArea.classList.add('dragover'); });
     uploadArea.addEventListener('dragleave', () => uploadArea.classList.remove('dragover'));
-    uploadArea.addEventListener('drop', (event) => {
-        event.preventDefault();
-        uploadArea.classList.remove('dragover');
-        if (event.dataTransfer.files && event.dataTransfer.files.length > 0) {
-            fileInput.files = event.dataTransfer.files;
+    uploadArea.addEventListener('drop', (e) => {
+        e.preventDefault(); uploadArea.classList.remove('dragover');
+        if (e.dataTransfer.files.length) {
+            fileInput.files = e.dataTransfer.files;
             handleFileSelect({ target: fileInput });
-        }
-    });
-    uploadArea.addEventListener('click', (event) => {
-        if (event.target !== browseButton && !browseButton.contains(event.target)) {
-            fileInput.click();
         }
     });
 
@@ -49,169 +39,138 @@ document.addEventListener('DOMContentLoaded', () => {
             colorizeBtn.disabled = false;
             bwBtn.disabled = false;
             outputArea.innerHTML = '';
-            updateStatus('File selected: ' + currentFile.name, 'info');
-        } else {
-            fileNameDisplay.textContent = '';
-            colorizeBtn.disabled = true;
-            bwBtn.disabled = true;
-            updateStatus('Select a file to begin.', 'info');
+            logContainer.style.display = 'none';
         }
     }
 
-    // --- Button Clicks ---
-    colorizeBtn.addEventListener('click', () => processFile('colorize'));
-    bwBtn.addEventListener('click', () => processFile('bw'));
+    // --- Processing Logic ---
+    colorizeBtn.addEventListener('click', () => startProcessing('colorize'));
+    bwBtn.addEventListener('click', () => startProcessing('bw'));
 
-    function processFile(mode) {
-        if (!currentFile) {
-            updateStatus('Please select a file first.', 'error');
-            return;
-        }
+    function startProcessing(mode) {
+        if (!currentFile) return;
+
+        // UI Reset
+        colorizeBtn.disabled = true;
+        bwBtn.disabled = true;
+        outputArea.innerHTML = '';
+        logContainer.style.display = 'flex';
+        logText.textContent = `Initializing ${mode} process for ${currentFile.name}...`;
+        progressBarContainer.style.display = 'block';
+        progressBar.style.width = '0%';
 
         const formData = new FormData();
         formData.append('file', currentFile);
         formData.append('mode', mode);
 
-        updateStatus(`Processing ${currentFile.name} (${mode})... This may take a while.`, 'processing');
-        colorizeBtn.disabled = true;
-        bwBtn.disabled = true;
-        outputArea.innerHTML = '';
-        progressBar.style.width = '0%';
-        progressBarContainer.style.display = 'block';
-
-        let progress = 0;
-        const interval = setInterval(() => {
-            progress += 5;
-            progressBar.style.width = Math.min(progress, 95) + '%';
-            if (progress >= 95) clearInterval(interval);
-        }, 200);
-
+        // 1. Send File to start processing
         fetch('/process', { method: 'POST', body: formData })
-        .then(response => {
-            clearInterval(interval);
-            if (!response.ok) {
-                return response.json().then(err => { throw new Error(err.error || `Server error: ${response.status}`) });
-            }
-            return response.json();
-        })
+        .then(response => response.json())
         .then(data => {
-            progressBar.style.width = '100%';
-            setTimeout(() => { progressBarContainer.style.display = 'none'; }, 500);
-            if (data.error) {
-                updateStatus(`Error: ${data.error}`, 'error');
-            } else {
-                updateStatus(data.message || 'Processing complete!', 'success');
-                displayOutput(data.processed_file_url, data.is_video, data.filename); // Pass filename for download link
-            }
+            if (data.error) throw new Error(data.error);
+            // 2. Start Polling for status using the Task ID
+            pollStatus(data.task_id);
         })
-        .catch(error => {
-            clearInterval(interval);
-            progressBarContainer.style.display = 'none';
-            console.error('Processing error:', error);
-            updateStatus(`Client-side or network error: ${error.message}`, 'error');
-        })
-        .finally(() => {
-            if (currentFile) {
-                 colorizeBtn.disabled = false;
-                 bwBtn.disabled = false;
-            }
+        .catch(err => {
+            logText.textContent = `Error: ${err.message}`;
+            logText.style.color = '#ff6b6b';
+            enableButtons();
         });
     }
 
-    function updateStatus(message, type = 'info') {
-        statusText.textContent = message;
-        statusText.className = '';
-        if (type) statusText.classList.add(type);
-    }
+    function pollStatus(taskId) {
+        pollInterval = setInterval(() => {
+            fetch(`/status/${taskId}`)
+            .then(res => res.json())
+            .then(data => {
+                // Update Log Text
+                if (data.log) logText.textContent = data.log;
+                
+                // Update Progress Bar (if available)
+                if (data.progress) progressBar.style.width = `${data.progress}%`;
 
-    // **MODIFIED: displayOutput for better video handling**
-    function displayOutput(fileUrl, isVideo, filename) {
-        outputArea.innerHTML = ''; // Clear previous
-        let mediaElement;
-
-        if (isVideo) {
-            mediaElement = document.createElement('video');
-            mediaElement.controls = true;
-            mediaElement.autoplay = true;
-            mediaElement.muted = true;   // Essential for autoplay in most browsers
-            mediaElement.loop = true;
-            mediaElement.style.maxWidth = '100%';
-            mediaElement.style.maxHeight = '500px'; // Adjust if needed
-            
-            // Add event listener for errors loading the video
-            mediaElement.addEventListener('error', function(e) {
-                console.error('Error loading video:', e);
-                console.error('Video src was:', mediaElement.src);
-                let errorMsg = 'Could not load video. The file might be corrupted or in an unsupported format.';
-                if (e.target && e.target.error) {
-                    switch (e.target.error.code) {
-                        case e.target.error.MEDIA_ERR_ABORTED: errorMsg = 'Video playback aborted.'; break;
-                        case e.target.error.MEDIA_ERR_NETWORK: errorMsg = 'A network error caused video download to fail.'; break;
-                        case e.target.error.MEDIA_ERR_DECODE: errorMsg = 'Video decoding error. File may be corrupted or unsupported.'; break;
-                        case e.target.error.MEDIA_ERR_SRC_NOT_SUPPORTED: errorMsg = 'Video source not supported. Check the URL or format.'; break;
-                        default: errorMsg = 'An unknown error occurred while loading the video.';
-                    }
+                if (data.status === 'completed') {
+                    clearInterval(pollInterval);
+                    progressBar.style.width = '100%';
+                    logText.textContent = "Processing complete! Loading result...";
+                    setTimeout(() => {
+                        displayOutput(data.result.url, data.result.is_video, data.result.filename);
+                        enableButtons();
+                    }, 1000);
+                } 
+                else if (data.status === 'error') {
+                    clearInterval(pollInterval);
+                    logText.style.color = '#ff6b6b';
+                    enableButtons();
                 }
-                outputArea.innerHTML = `<p style="color: var(--error-color);">${errorMsg}</p>
-                                        <p>Try downloading it: <a href="${fileUrl}" download="${filename || 'video.mp4'}" target="_blank">${filename || 'Download Video'}</a></p>`;
+            })
+            .catch(err => {
+                console.error(err);
+                clearInterval(pollInterval);
             });
+        }, 1000); // Check every 1 second
+    }
 
-            // Add event listener for when video can play
-            mediaElement.addEventListener('canplay', function() {
-                console.log('Video can play. Source:', mediaElement.src);
-            });
-            
-        } else {
-            mediaElement = document.createElement('img');
-            mediaElement.style.maxWidth = '100%';
-            mediaElement.style.maxHeight = '500px'; // Adjust if needed
-             mediaElement.alt = filename || "Processed Image";
-        }
+    function displayOutput(url, isVideo, filename) {
+        const timestampedUrl = `${url}?t=${new Date().getTime()}`;
+        outputArea.innerHTML = '';
         
-        // IMPORTANT: Ensure the URL is correctly formed and the server serves it
-        // Adding a timestamp can help bust caches during development
-        // const cacheBusterUrl = fileUrl + '?t=' + new Date().getTime();
-        // mediaElement.src = cacheBusterUrl; 
-        mediaElement.src = fileUrl; // Use direct URL first
-
-        outputArea.appendChild(mediaElement);
+        // Create Container
+        const container = document.createElement('div');
+        container.style.display = "flex";
+        container.style.flexDirection = "column";
+        container.style.alignItems = "center";
 
         if (isVideo) {
-            mediaElement.load(); // Explicitly call load for video after src is set
-            // mediaElement.play().catch(error => console.warn("Autoplay prevented:", error)); // Attempt to play if autoplay is set
-        }
-    }
+            const video = document.createElement('video');
+            video.controls = true;
+            video.autoplay = true;
+            video.muted = true; // Required for autoplay
+            video.loop = true;
+            video.style.maxWidth = "100%";
+            video.style.borderRadius = "10px";
+            video.style.border = "1px solid rgba(255,255,255,0.2)";
+            
+            // Source with cache busting
+            video.src = timestampedUrl;
 
-    // **MODIFIED: Theme Toggle Logic**
-    function applyTheme(theme) {
-        if (theme === 'dark') {
-            bodyElement.classList.add('dark-mode');
-            themeIcon.textContent = 'brightness_4'; // Moon icon
+            // Handle Playback Errors (Codec issues)
+            video.onerror = () => {
+                video.style.display = 'none';
+                const errorMsg = document.createElement('p');
+                errorMsg.style.color = '#ff6b6b';
+                errorMsg.style.marginTop = '15px';
+                errorMsg.innerHTML = `⚠️ <strong>Preview Unavailable:</strong> The video format isn't supported by your browser.<br>Please use the <strong>Download</strong> button below to view it.`;
+                container.insertBefore(errorMsg, container.firstChild);
+            };
+
+            container.appendChild(video);
         } else {
-            bodyElement.classList.remove('dark-mode');
-            themeIcon.textContent = 'brightness_7'; // Sun icon
+            const img = document.createElement('img');
+            img.src = timestampedUrl;
+            img.style.maxWidth = "100%";
+            img.style.borderRadius = "10px";
+            img.style.boxShadow = "0 10px 30px rgba(0,0,0,0.5)";
+            container.appendChild(img);
         }
+
+        // Distinct Download Button
+        const dlBtn = document.createElement('a');
+        dlBtn.href = url;
+        dlBtn.download = filename || 'processed_result';
+        dlBtn.className = "btn"; // Re-use the main button style
+        dlBtn.style.marginTop = "20px";
+        dlBtn.style.background = "#2ecc71"; // Green for success
+        dlBtn.style.border = "none";
+        dlBtn.innerHTML = `<span class="material-symbols-outlined">download</span> Download Result`;
+        
+        container.appendChild(dlBtn);
+        outputArea.appendChild(container);
     }
 
-    // Load saved theme preference or default to system preference
-    let currentTheme = localStorage.getItem('theme');
-    if (!currentTheme) {
-        currentTheme = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    function enableButtons() {
+        colorizeBtn.disabled = false;
+        bwBtn.disabled = false;
+        // Don't hide log container immediately so user can see what happened
     }
-    applyTheme(currentTheme);
-
-    themeToggleBtn.addEventListener('click', () => {
-        let newTheme = bodyElement.classList.contains('dark-mode') ? 'light' : 'dark';
-        applyTheme(newTheme);
-        localStorage.setItem('theme', newTheme);
-    });
-
-    // Listen for system theme changes
-    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
-        const newColorScheme = e.matches ? "dark" : "light";
-        // Only change if no explicit user preference is set
-        if (!localStorage.getItem('theme')) {
-            applyTheme(newColorScheme);
-        }
-    });
 });
